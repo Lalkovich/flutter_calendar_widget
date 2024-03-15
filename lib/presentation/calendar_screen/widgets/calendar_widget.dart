@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:table_calendar/table_calendar.dart';
 
+import '../../../core/recources/app_sizes.dart';
+import '../../../utils/box_decoration_util.dart';
+
 class CalendarWidget extends StatefulWidget {
   const CalendarWidget({super.key});
 
@@ -15,32 +18,17 @@ class _CalendarWidgetState extends State<CalendarWidget> {
   DateTime? _rangeStart;
   DateTime? _rangeEnd;
 
-  BoxDecoration _buildDecoration(DateTime day, DateTime start, DateTime? end) {
-    // Визначення, чи є день частиною одноденної подорожі
-    bool isOneDayTrip = end != null && isSameDay(start, end);
-
-    if (end == null || isOneDayTrip) {
-      // Якщо кінцева дата не встановлена або це одноденна поїздка, використовувати коло
-      return BoxDecoration(
-        color: Colors.deepOrange,
-        shape: BoxShape.circle,
-      );
-    } else {
-      // Range selection
-      bool isStart = isSameDay(day, start);
-      bool isEnd = isSameDay(day, end);
-      BorderRadiusGeometry radius = BorderRadius.zero;
-
-      if (isStart) {
-        radius = const BorderRadius.horizontal(left: Radius.circular(20.0));
-      } else if (isEnd) {
-        radius = const BorderRadius.horizontal(right: Radius.circular(20.0));
-      }
-
-      return BoxDecoration(
-        color: isStart || isEnd ? Colors.deepOrange : Colors.grey[200],
-        borderRadius: radius,
-      );
+  void onHeaderTapped(DateTime focusedDay) {
+    final earliestDate = DateTime(2020);
+    final latestDate = DateTime(2030);
+    if (focusedDay.isBefore(earliestDate)) {
+      setState(() {
+        _focusedDay = earliestDate;
+      });
+    } else if (focusedDay.isAfter(latestDate)) {
+      setState(() {
+        _focusedDay = latestDate;
+      });
     }
   }
 
@@ -49,11 +37,10 @@ class _CalendarWidgetState extends State<CalendarWidget> {
     return Column(
       children: [
         Container(
-          padding: const EdgeInsets.symmetric(horizontal: 8.0),
+          padding: const EdgeInsets.symmetric(horizontal: AppSizes.s8),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Month and Year
               Text(
                 DateFormat.yMMMM().format(_focusedDay),
                 style: const TextStyle(
@@ -61,7 +48,6 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              // Chevron icons
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -74,6 +60,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                           _focusedDay.month - 1,
                           _focusedDay.day,
                         );
+                        onHeaderTapped(_focusedDay);
                       });
                     },
                   ),
@@ -86,6 +73,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                           _focusedDay.month + 1,
                           _focusedDay.day,
                         );
+                        onHeaderTapped(_focusedDay);
                       });
                     },
                   ),
@@ -94,7 +82,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
             ],
           ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: AppSizes.s8),
         TableCalendar(
           headerVisible: false,
           firstDay: DateTime.utc(2020, 1, 1),
@@ -115,18 +103,18 @@ class _CalendarWidgetState extends State<CalendarWidget> {
           ),
           calendarBuilders: CalendarBuilders(
             rangeStartBuilder: (context, date, _) => Container(
-              margin: const EdgeInsets.all(6.0),
+              margin: const EdgeInsets.all(AppSizes.s6),
               alignment: Alignment.center,
-              decoration: _buildDecoration(date, _rangeStart!, _rangeEnd),
+              decoration: buildDecoration(date, _rangeStart!, _rangeEnd),
               child: Text(
                 '${date.day}',
                 style: const TextStyle(color: Colors.white),
               ),
             ),
             rangeEndBuilder: (context, date, _) => Container(
-              margin: const EdgeInsets.all(6.0),
+              margin: const EdgeInsets.all(AppSizes.s6),
               alignment: Alignment.center,
-              decoration: _buildDecoration(date, _rangeStart!, _rangeEnd),
+              decoration: buildDecoration(date, _rangeStart!, _rangeEnd),
               child: Text(
                 '${date.day}',
                 style: const TextStyle(color: Colors.white),
@@ -134,7 +122,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
             ),
             todayBuilder: (context, day, focusedDay) {
               return Container(
-                margin: const EdgeInsets.all(4.0),
+                margin: const EdgeInsets.all(AppSizes.s4),
                 alignment: Alignment.center,
                 decoration: const BoxDecoration(
                   shape: BoxShape.circle,
@@ -142,11 +130,11 @@ class _CalendarWidgetState extends State<CalendarWidget> {
                 child: Stack(
                   children: [
                     Positioned(
-                      right: 1,
-                      top: 1,
+                      right: 0,
+                      top: 0,
                       child: Container(
-                        width: 6,
-                        height: 6,
+                        width: AppSizes.s6,
+                        height: AppSizes.s6,
                         decoration: const BoxDecoration(
                           color: Colors.green,
                           shape: BoxShape.circle,
@@ -164,7 +152,7 @@ class _CalendarWidgetState extends State<CalendarWidget> {
               );
             },
             withinRangeBuilder: (context, date, _) => Container(
-              margin: const EdgeInsets.all(8.0),
+              margin: const EdgeInsets.all(AppSizes.s8),
               alignment: Alignment.center,
               decoration: BoxDecoration(
                 color: Colors.grey[100],
@@ -177,42 +165,17 @@ class _CalendarWidgetState extends State<CalendarWidget> {
             ),
           ),
           onDaySelected: (selectedDay, focusedDay) {
-            if (_rangeStart == null ||
-                (_rangeStart != null && _rangeEnd != null)) {
-              // Якщо початкова дата не вибрана, або якщо вже вибрані і початкова, і кінцева дати,
-              // встановити вибрану дату як нову початкову дату і скинути кінцеву дату.
-              setState(() {
+            setState(() {
+              if (_rangeStart == null ||
+                  _rangeEnd != null ||
+                  selectedDay.isBefore(_rangeStart!)) {
                 _rangeStart = selectedDay;
                 _rangeEnd = null;
-                _focusedDay = focusedDay;
-              });
-            } else if (selectedDay.isBefore(_rangeStart!)) {
-              // Якщо вибрана дата перед початковою, зробити її новою початковою датою.
-              setState(() {
-                _rangeStart = selectedDay;
-                _focusedDay = focusedDay;
-              });
-            } else if (selectedDay.isAfter(_rangeStart!)) {
-              // Якщо вибрана дата після початкової, зробити її кінцевою датою.
-              setState(() {
+              } else {
                 _rangeEnd = selectedDay;
-                _focusedDay = focusedDay;
-              });
-            } else {
-              // Якщо вибрана дата співпадає з початковою, встановити її як кінцеву дату,
-              // створюючи таким чином одноденний діапазон.
-              setState(() {
-                _rangeEnd = selectedDay;
-                _focusedDay = focusedDay;
-              });
-            }
-          },
-          onFormatChanged: (format) {
-            if (_calendarFormat != format) {
-              setState(() {
-                _calendarFormat = format;
-              });
-            }
+              }
+              _focusedDay = focusedDay;
+            });
           },
           onPageChanged: (focusedDay) {
             _focusedDay = focusedDay;

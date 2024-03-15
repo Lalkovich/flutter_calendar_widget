@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_calendar_widget/core/recources/app_strings.dart';
 import 'package:flutter_calendar_widget/presentation/calendar_screen/widgets/calendar_widget.dart';
 import 'package:widgetbook/widgetbook.dart';
 
 void main() {
-  runApp(const HotReload());
+  runApp(const WidgetbookMain());
 }
 
-class HotReload extends StatelessWidget {
-  const HotReload({super.key});
+class WidgetbookMain extends StatelessWidget {
+  const WidgetbookMain({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -15,13 +16,15 @@ class HotReload extends StatelessWidget {
       addons: [],
       directories: [
         WidgetbookFolder(
-          name: 'Widgets',
+          name: AppStrings.widgetFolderName,
           children: [
-            WidgetbookComponent(name: 'Calendar', useCases: [
-              WidgetbookUseCase(
-                  name: 'CalendarUseCase',
-                  builder: (context) => const CalendarWidget()),
-            ]),
+            WidgetbookComponent(
+                name: AppStrings.calendarComponentName,
+                useCases: [
+                  WidgetbookUseCase(
+                      name: AppStrings.calendarUseCase,
+                      builder: (context) => const CalendarWidget()),
+                ]),
           ],
         )
       ],
